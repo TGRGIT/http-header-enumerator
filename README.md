@@ -1,7 +1,7 @@
 # Http Header Enumerator
-Enumerates HTTP Headers on a list of ip addresses
+Enumerates HTTP Headers on a list of ip addresses or domain names
 
-Uses libcurl and OpenMP to scan ip addresses and extract HTTP header information
+Uses libcurl and OpenMP to scan addresses and extract HTTP header information
 
 ## Requires
 - libcurl4-dev
