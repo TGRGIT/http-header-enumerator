@@ -8,14 +8,14 @@ Uses libcurl and OpenMP to scan addresses and extract HTTP header information
 - build-essential
 
 
-## build
+## Build
 ```
 g++ main.cpp -l curl -fopenmp
 ```
 
-## run
+## Run
 ```
-./a.out iplist.txt 1024
+./a.out iplist.txt NUM_THREADS
 ```
 
 ### Performance
