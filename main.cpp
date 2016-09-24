@@ -19,24 +19,6 @@ using std::string;
 
 using namespace std;
 
-CURLcode retrieve(CURL *hnd, char* address, string &outputdata){
-  CURLcode ret;
-
-  curl_easy_setopt(hnd, CURLOPT_URL, address);
-  curl_easy_setopt(hnd, CURLOPT_WRITEDATA, &outputdata);
-  ret = curl_easy_perform(hnd);
-  return ret;
-}
-
-vector<string> readfile(char* filepath){
-  vector<string> DataArray;
-  ifstream iplist(filepath);
-  copy(istream_iterator<string>(iplist),
-         istream_iterator<string>(),
-         back_inserter(DataArray));
-
-  return DataArray;
-}
 
 size_t CurlWrite_CallbackFunc_StdString(void *contents, size_t size, size_t nmemb, std::string *s)
 {
@@ -56,17 +38,9 @@ size_t CurlWrite_CallbackFunc_StdString(void *contents, size_t size, size_t nmem
     return size*nmemb;
 }
 
-int main(int argc, char *argv[])
-{
-  CURLcode ret;
+CURLcode retrieve(char* address, string &outputdata){
   CURL *hnd;
-  vector<string> iplist;
-  char target[] = "209.85.202.139";
-  char ifile[] = "iplist.txt";
-  iplist = readfile(ifile);
-  std::cout << "\n" << iplist.size() << '\n';
-
-
+  CURLcode ret;
   hnd = curl_easy_init();
   curl_easy_setopt(hnd, CURLOPT_NOPROGRESS, 1L);
   curl_easy_setopt(hnd, CURLOPT_NOBODY, 1L);
@@ -78,6 +52,33 @@ int main(int argc, char *argv[])
   curl_easy_setopt(hnd, CURLOPT_CONNECTTIMEOUT_MS, 2000L);
   curl_easy_setopt(hnd, CURLOPT_TCP_KEEPALIVE, 1L);
   curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, CurlWrite_CallbackFunc_StdString);
+
+  curl_easy_setopt(hnd, CURLOPT_URL, address);
+  curl_easy_setopt(hnd, CURLOPT_WRITEDATA, &outputdata);
+  ret = curl_easy_perform(hnd);
+  curl_easy_cleanup(hnd);
+  hnd = NULL;
+  return ret;
+}
+
+vector<string> readfile(char* filepath){
+  vector<string> DataArray;
+  ifstream iplist(filepath);
+  copy(istream_iterator<string>(iplist),
+         istream_iterator<string>(),
+         back_inserter(DataArray));
+
+  return DataArray;
+}
+
+
+int main(int argc, char *argv[])
+{
+  CURLcode ret;
+  vector<string> iplist;
+  char ifile[] = "iplist.txt";
+  iplist = readfile(ifile);
+  std::cout << "\n" << iplist.size() << '\n';
 
   /* Here is a list of options the curl code used that cannot get generated
      as source easily. You may select to either not use them or implement
@@ -96,25 +97,25 @@ int main(int argc, char *argv[])
 
   */
   int listsize = iplist.size();
+  omp_set_num_threads(2048);
   #pragma omp parallel for
   for(int i=0; i < listsize; i++)
   {
     string output;
     string listitem = iplist.at(i);
     char *address = strdup(listitem.c_str());
-    std::cout << address << '\n';
-    ret = retrieve(hnd, address, output);
+    ret = retrieve(address, output);
 
     #pragma omp critical
-  	std::cout << output << '\n';
+    {
+      std::cout << address << '\n';
+    	std::cout << output << '\n';
+    }
   }
 
-  string output;
-  ret = retrieve(hnd, target, output);
-  std::cout << output;
 
-  curl_easy_cleanup(hnd);
-  hnd = NULL;
+  std::cout << "Done";
+
 
   return (int)ret;
 }
