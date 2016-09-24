@@ -10,7 +10,7 @@ Uses libcurl and OpenMP to scan addresses and extract HTTP header information
 
 ## Build
 ```
-g++ main.cpp -l curl -fopenmp
+make
 ```
 
 ## Run
