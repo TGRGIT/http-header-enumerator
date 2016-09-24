@@ -9,6 +9,7 @@
 #include <iterator>
 #include <fstream>
 #include <omp.h>
+#include <stdlib.h>
 #include <string>
 #include <vector>
 
@@ -76,28 +77,16 @@ int main(int argc, char *argv[])
 {
   CURLcode ret;
   vector<string> iplist;
-  char ifile[] = "iplist.txt";
-  iplist = readfile(ifile);
-  std::cout << "\n" << iplist.size() << '\n';
+  if (argc != 3){
+    cout << "Usage: scanner INPUT_FILE_OF_IPS.txt NUM_THREADS_TO_USE" << endl;
+    return 1;
+  }
+  int nthreads = atoi(argv[2]);
 
-  /* Here is a list of options the curl code used that cannot get generated
-     as source easily. You may select to either not use them or implement
-     them yourself.
+  iplist = readfile(argv[1]);
 
-  CURLOPT_WRITEDATA set to a objectpointer
-  CURLOPT_WRITEFUNCTION set to a functionpointer
-  CURLOPT_READDATA set to a objectpointer
-  CURLOPT_READFUNCTION set to a functionpointer
-  CURLOPT_SEEKDATA set to a objectpointer
-  CURLOPT_SEEKFUNCTION set to a functionpointer
-  CURLOPT_ERRORBUFFER set to a objectpointer
-  CURLOPT_STDERR set to a objectpointer
-  CURLOPT_HEADERFUNCTION set to a functionpointer
-  CURLOPT_HEADERDATA set to a objectpointer
-
-  */
   int listsize = iplist.size();
-  omp_set_num_threads(2048);
+  omp_set_num_threads(nthreads);
   #pragma omp parallel for
   for(int i=0; i < listsize; i++)
   {
@@ -112,10 +101,6 @@ int main(int argc, char *argv[])
     	std::cout << output << '\n';
     }
   }
-
-
-  std::cout << "Done";
-
 
   return (int)ret;
 }
