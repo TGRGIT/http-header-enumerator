@@ -88,6 +88,8 @@ int main(int argc, char *argv[])
 
   int listsize = iplist.size();
   omp_set_num_threads(nthreads);
+  std::cout << '{';
+
   #pragma omp parallel for
   for(int i=0; i < listsize; i++)
   {
@@ -104,10 +106,12 @@ int main(int argc, char *argv[])
 
     #pragma omp critical
     {
-      std::cout << dstream << '\n';
+      std::cout << dstream << ",\n";
     }
   }
 
-  return (int)ret;
+  std::cout << '}';
+
+  return 0;
 }
 /**** End of sample code ****/
