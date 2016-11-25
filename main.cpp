@@ -12,6 +12,9 @@
 #include <string>
 #include <vector>
 
+#include "json.hpp"
+
+using json = nlohmann::json;
 using std::istream_iterator;
 using std::copy;
 using std::vector;
@@ -43,7 +46,6 @@ CURLcode retrieve(char* address, string &outputdata){
   CURLcode ret;
   hnd = curl_easy_init();
   curl_easy_setopt(hnd, CURLOPT_NOPROGRESS, 1L);
-  curl_easy_setopt(hnd, CURLOPT_NOBODY, 1L);
   curl_easy_setopt(hnd, CURLOPT_HEADER, 1L);
   curl_easy_setopt(hnd, CURLOPT_TIMEOUT_MS, 10000L);
   curl_easy_setopt(hnd, CURLOPT_USERAGENT, "curl/7.47.0");
@@ -94,10 +96,15 @@ int main(int argc, char *argv[])
     char *address = strdup(listitem.c_str());
     ret = retrieve(address, output);
 
+    json j;
+    j["address"] = address;
+    j["http_response"] = output;
+
+    string dstream = j.dump();
+
     #pragma omp critical
     {
-      std::cout << address << '\n';
-    	std::cout << output << '\n';
+      std::cout << dstream << '\n';
     }
   }
 
